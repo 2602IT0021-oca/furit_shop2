@@ -2,11 +2,32 @@
 
 <h3>ご注文が完了しました。</h3>
 
-<h4>商品名</h4>
-<%= @product.name %>
+<h3>注文商品一覧</h3>
 
-<h4>個数</h4>
-<%= @order.count %> 個
+<table>
+  <thead>
+    <tr>
+      <th>商品名</th>
+      <th>個数</th>
+      <th>価格</th>
+      <th>小計</th>
+    </tr>
+  </thead>
 
-<h4>金額</h4>
-<%= @order.total_price %> 円
+  <tbody>
+    <% @order.order_details.each do |detail| %>
+      <tr>
+        <td><%= detail.product.name %></td>
+        <td><%= detail.quantity %></td>
+        <td><%= "¥" + number_with_delimiter(detail.price) %></td>
+        <td><%= "¥" + number_with_delimiter(detail.price * detail.quantity) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<h4>合計金額</h4>
+<%= "¥" + number_with_delimiter(@order.total_price) %>
+
+<h4>送り先</h4>
+<%= @order.address %>
