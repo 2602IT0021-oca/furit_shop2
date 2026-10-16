@@ -1,0 +1,68 @@
+
+<h1>顧客一覧</h1>
+
+<h2>顧客検索</h2>
+
+<%= search_form_for @q, url: customers_path do |f| %>
+  <p>
+    <%= f.label :name_cont, "顧客名" %>
+    <%= f.search_field :name_cont %>
+  </p>
+
+  <p>
+    <%= f.label :email_cont, "メールアドレス" %>
+    <%= f.search_field :email_cont %>
+  </p>
+
+  <p>
+    <%= f.label :age_eq, "顧客年齢" %>
+    <%= f.number_field :age_eq, min: 0 %>
+  </p>
+
+  <p>
+    <%= f.label :employee_id_eq, "担当者" %>
+    <%= f.select :employee_id_eq,
+        options_from_collection_for_select(
+          @employees, :id, :name,
+          params.dig(:q, :employee_id_eq)
+        ),
+        { include_blank: "すべて" } %>
+  </p>
+
+  <%= f.submit "検索" %>
+  <%= link_to "クリア", customers_path %>
+<% end %>
+
+<hr>
+
+<h2>検索結果</h2>
+
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>顧客名</th>
+      <th>メールアドレス</th>
+      <th>年齢</th>
+      <th>担当者</th>
+      <th>詳細</th>
+      <th>編集</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @customers.each do |customer| %>
+      <tr>
+        <td><%= customer.name.presence || "未登録" %></td>
+        <td><%= customer.email %></td>
+        <td><%= customer.age || "未登録" %></td>
+        <td><%= customer.employee&.name || "未設定" %></td>
+        <td><%= link_to "詳細", customer_path(customer) %></td>
+        <td><%= link_to "編集", edit_customer_path(customer) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<% if @customers.empty? %>
+  <p>該当する顧客がいません。</p>
+<% end %>

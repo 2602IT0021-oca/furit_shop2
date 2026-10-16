@@ -1,0 +1,35 @@
+
+<h1>顧客編集</h1>
+
+<%= form_with model: @customer, url: customer_path(@customer), method: :patch do |f| %>
+
+  <p>
+    <strong>顧客名：</strong>
+    <%= @customer.name.presence || "未登録" %>
+  </p>
+
+  <p>
+    <strong>メールアドレス：</strong>
+    <%= @customer.email %>
+  </p>
+
+  <p>
+    <%= f.label :age, "年齢" %>
+    <%= f.number_field :age, min: 0, max: 120 %>
+  </p>
+
+  <p>
+    <%= f.label :employee_id, "担当者" %>
+    <%= f.collection_select :employee_id,
+          @employees, :id, :name,
+          { include_blank: "未設定" } %>
+  </p>
+
+  <%= f.submit "更新する" %>
+<% end %>
+
+<hr>
+
+<%= link_to "顧客詳細に戻る", customer_path(@customer) %>
+|
+<%= link_to "顧客一覧に戻る", customers_path %>

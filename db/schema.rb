@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_043455) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_051743) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -56,6 +56,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_043455) do
     t.index ["user_id"], name: "index_carts_on_user_id"
   end
 
+  create_table "employees", force: :cascade do |t|
+    t.integer "age"
+    t.datetime "created_at", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+  end
+
   create_table "order_details", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "order_id", null: false
@@ -92,6 +99,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_043455) do
     t.datetime "current_sign_in_at"
     t.string "current_sign_in_ip"
     t.string "email"
+    t.integer "employee_id"
     t.string "encrypted_password", default: "", null: false
     t.datetime "last_sign_in_at"
     t.string "last_sign_in_ip"
@@ -102,6 +110,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_043455) do
     t.integer "sign_in_count", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["employee_id"], name: "index_users_on_employee_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
@@ -113,4 +122,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_043455) do
   add_foreign_key "order_details", "orders"
   add_foreign_key "order_details", "products"
   add_foreign_key "orders", "users"
+  add_foreign_key "users", "employees"
 end

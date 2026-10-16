@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+resources :customers, only: [:index, :show, :edit, :update]
 
   devise_for :users
 

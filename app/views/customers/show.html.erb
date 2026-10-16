@@ -1,0 +1,59 @@
+
+<h1>顧客詳細</h1>
+
+<p>
+  <strong>顧客名：</strong>
+  <%= @customer.name.presence || "未登録" %>
+</p>
+
+<p>
+  <strong>メールアドレス：</strong>
+  <%= @customer.email %>
+</p>
+
+<p>
+  <strong>年齢：</strong>
+  <%= @customer.age || "未登録" %>
+</p>
+
+<p>
+  <strong>担当者：</strong>
+  <%= @customer.employee&.name || "未設定" %>
+</p>
+
+<hr>
+
+<h2>注文履歴</h2>
+
+<% orders = @customer.orders.order(created_at: :desc) %>
+
+<% if orders.any? %>
+  <table border="1" cellpadding="8">
+    <thead>
+      <tr>
+        <th>注文番号</th>
+        <th>注文日</th>
+        <th>合計金額</th>
+        <th>配送先</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% orders.each do |order| %>
+        <tr>
+          <td><%= order.id %></td>
+          <td><%= order.created_at.strftime("%Y/%m/%d %H:%M") %></td>
+          <td><%= order.total_price %> 円</td>
+          <td><%= order.address %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>注文履歴はありません。</p>
+<% end %>
+
+<hr>
+
+<%= link_to "編集", edit_customer_path(@customer) %>
+|
+<%= link_to "顧客一覧に戻る", customers_path %>
