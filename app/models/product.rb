@@ -1,4 +1,11 @@
 class Product < ApplicationRecord
+
+  def self.ransackable_attributes(auth_object = nil)
+    %w[name price]
+  end
+  def self.ransackable_associations(auth_object = nil)
+  []
+end
   enum :status, { on_sale: 0, sold_out: 1 }
   validates :name, presence: true, uniqueness: true  # 商品名は必須で一意
   validates :price, presence: true

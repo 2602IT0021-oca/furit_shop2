@@ -23,9 +23,10 @@ class ProductsController < ApplicationController
   end
 
   # 商品一覧
-  def index
-    @products = Product.all
-  end
+def index
+  @q = Product.ransack(params[:q])
+  @products = @q.result(distinct: true)
+end
 
   # 商品詳細
   def show

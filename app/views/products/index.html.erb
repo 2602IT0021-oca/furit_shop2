@@ -1,18 +1,58 @@
+
 <h1>商品一覧</h1>
 
-<% if current_user.admin_flg == true %>
-<%= link_to "新規登録", new_product_path %>
+<% if current_user&.admin_flg? %>
+  <%= link_to "新規登録", new_product_path %>
 <% end %>
 
+<h2>商品検索</h2>
+
+<%= search_form_for @q, url: products_path do |f| %>
+  <p>
+    <%= f.label :name_cont, "商品名" %>
+    <%= f.search_field :name_cont %>
+  </p>
+
+  <p>
+    <%= f.label :price_gteq, "最低価格" %>
+    <%= f.number_field :price_gteq, min: 0 %>
+  </p>
+
+  <p>
+    <%= f.label :price_lteq, "最高価格" %>
+    <%= f.number_field :price_lteq, min: 0 %>
+  </p>
+
+  <%= f.submit "検索" %>
+  <%= link_to "クリア", products_path %>
+<% end %>
+
+<h2>並び替え</h2>
+
+<p>
+  <%= sort_link(@q, :name, "商品名順") %>
+  |
+  <%= sort_link(@q, :price, "価格順") %>
+</p>
+
+<hr>
+
 <% @products.each do |product| %>
+  <div>
+    <% if product.photo.attached? %>
+      <%= image_tag product.thumbnail %>
+    <% end %>
 
-<div> <% if product.photo.attached? %> <%= image_tag product.thumbnail %> <% end %>
+    <p>商品名 : <%= product.name %></p>
+    <p>説明 : <%= product.description %></p>
+    <p>価格 : <%= product.price %> 円</p>
 
-<p>商品名 : <%= product.name %></p>
-<p>説明 : <%= product.description %></p>
-<p>価格 : <%= product.price %> 円</p>
-<%= link_to "詳細", product_path(product.id) %>
+    <%= link_to "詳細", product_path(product.id) %>
+  </div>
 
-</div> <hr>
+  <hr>
+<% end %>
 
+<% if @products.empty? %>
+  <p>該当する商品がありません。</p>
 <% end %>
