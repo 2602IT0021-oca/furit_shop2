@@ -46,10 +46,9 @@ class OrdersController < ApplicationController
     end
   end
 
-  def complete
-    @order = current_user.orders.find(params[:id])
-    @product = @order.product
-  end
+def complete
+  @order = current_user.orders.find(params[:id])
+end
 
   private
 

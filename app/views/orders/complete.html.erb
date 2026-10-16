@@ -2,11 +2,18 @@
 
 <h3>ご注文が完了しました。</h3>
 
-<h4>商品名</h4>
-<%= @product.name %>
+<h4>注文商品</h4>
 
-<h4>個数</h4>
-<%= @order.count %> 個
+<% @order.order_details.each do |detail| %>
+  <div>
+    <p>商品名: <%= detail.product.name %></p>
+    <p>個数: <%= detail.quantity %> 個</p>
+    <p>小計: <%= detail.product.price * detail.quantity %> 円</p>
+  </div>
+  <hr>
+<% end %>
 
-<h4>金額</h4>
-<%= @order.total_price %> 円
+<h4>合計金額</h4>
+<p><%= @order.total_price %> 円</p>
+
+<%= link_to "商品一覧に戻る", products_path %>
