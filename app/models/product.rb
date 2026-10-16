@@ -1,5 +1,5 @@
 class Product < ApplicationRecord
-
+  enum :status, { on_sale: 0, sold_out: 1 }
   validates :name, presence: true, uniqueness: true  # 商品名は必須で一意
   validates :price, presence: true
 

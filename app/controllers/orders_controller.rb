@@ -10,6 +10,19 @@ class OrdersController < ApplicationController
       redirect_to products_path, alert: "カートが空です。"
       return
     end
+    
+    if cart_items.any? { |item| item.product.sold_out? }
+      redirect_to cart_path(current_user.cart),
+                  alert: "売り切れの商品がカートに含まれています。"
+      return
+    end
+
+    if cart_items.any? { |item| item.quantity <= 0 }
+      redirect_to cart_path(current_user.cart),
+                  alert: "商品の数量が正しくありません。"
+      return
+    end
+
 
     @item_totals = @cart_items.map do |item|
       item.product.price * item.quantity
@@ -57,6 +70,15 @@ class OrdersController < ApplicationController
       redirect_to products_path, alert: "カートが空です。"
       return
     end
+    if cart_items.any? { |item| item.product.sold_out? }
+  redirect_to cart_path(cart), alert: "売り切れの商品がカートに含まれています。"
+  return
+end
+
+if cart_items.any? { |item| item.quantity <= 0 }
+  redirect_to cart_path(cart), alert: "商品の数量が正しくありません。"
+  return
+end
 
     @order = current_user.orders.build(address: order_params[:address])
 

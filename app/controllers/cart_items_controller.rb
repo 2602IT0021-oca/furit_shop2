@@ -1,49 +1,63 @@
+
 class CartItemsController < ApplicationController
+  before_action :authenticate_user!
+
   def create
-    # ユーザーのカートを取得
-    cart = current_user.cart
+    product = Product.find(cart_item_params[:product_id])
+    quantity = cart_item_params[:quantity].to_i
 
-    # カートに同じ商品があるか確認
-    cart_item = cart.cart_items.find_by(product_id: cart_item_params[:product_id])
-
-    if cart_item
-      # 同じ商品がある場合は数量を更新
-      cart_item.quantity += cart_item_params[:quantity].to_i
-    else
-      # 同じ商品がない場合は新しいカートアイテムを作成
-      cart_item = cart.cart_items.new(cart_item_params)
+    if product.sold_out?
+      redirect_to product_path(product), alert: "この商品は売り切れです。"
+      return
     end
 
+    if quantity <= 0
+      redirect_to product_path(product), alert: "数量を正しく入力してください。"
+      return
+    end
+
+    cart = current_user.cart || current_user.create_cart
+
+    cart_item = cart.cart_items.find_or_initialize_by(product: product)
+    cart_item.quantity = cart_item.quantity.to_i + quantity
+
     if cart_item.save
-      user_cart_calculation
-      redirect_to cart_path(current_user.cart), notice: '商品がカートに追加されました。'
+      redirect_to cart_path(cart), notice: "商品がカートに追加されました。"
     else
-      redirect_to products_path, notice: '商品をカートに追加できませんでした。'
+      redirect_to product_path(product), alert: "商品をカートに追加できませんでした。"
     end
   end
 
   def update
-    # カート内の商品数量を更新
-    cart_item = CartItem.find(params[:id])
+    cart = current_user.cart
+    cart_item = cart.cart_items.find(params[:id])
 
-    if cart_item.update(cart_item_params)
-      user_cart_calculation
-      redirect_to cart_path(current_user.cart), notice: '商品数量が更新されました。'
+    quantity = cart_item_params[:quantity].to_i
+
+    if cart_item.product.sold_out?
+      redirect_to cart_path(cart), alert: "この商品は売り切れです。"
+      return
+    end
+
+    if quantity <= 0
+      redirect_to cart_path(cart), alert: "数量を正しく入力してください。"
+      return
+    end
+
+    if cart_item.update(quantity: quantity)
+      redirect_to cart_path(cart), notice: "商品数量が更新されました。"
     else
-      redirect_to cart_path(current_user.cart), notice: '商品数量の更新に失敗しました。'
+      redirect_to cart_path(cart), alert: "商品数量の更新に失敗しました。"
     end
   end
 
   def destroy
-    # カート内の商品を削除
-    cart_item = CartItem.find(params[:id])
+    cart = current_user.cart
+    cart_item = cart.cart_items.find(params[:id])
 
-    if cart_item.destroy
-      user_cart_calculation
-      redirect_to cart_path(current_user.cart), notice: '商品がカートから削除されました。'
-    else
-      redirect_to cart_path(current_user.cart), notice: '商品をカートから削除できませんでした。'
-    end
+    cart_item.destroy
+
+    redirect_to cart_path(cart), notice: "商品がカートから削除されました。"
   end
 
   private
