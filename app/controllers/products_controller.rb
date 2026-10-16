@@ -66,9 +66,8 @@ class ProductsController < ApplicationController
 
     # 管理者確認メソッド
     def check_admin
-      unless current_user.admin_flg
-        # 管理者でない場合、商品一覧ページにリダイレクト
-        redirect_to products_path, alert: '管理者権限が必要です。'
-      end
+  unless current_user&.admin_flg?
+    redirect_to products_path, alert: '管理者権限が必要です。'
+  end
     end
 end

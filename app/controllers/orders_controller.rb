@@ -1,64 +1,94 @@
+
 class OrdersController < ApplicationController
+  before_action :authenticate_user!
 
   def new
     @order = Order.new
-    @cart_items = current_user.cart.cart_items.includes(:product)
-    user_cart_calculation
+    @cart_items = current_user.cart&.cart_items&.includes(:product) || []
+
+    if @cart_items.empty?
+      redirect_to products_path, alert: "カートが空です。"
+      return
+    end
+
+    @item_totals = @cart_items.map do |item|
+      item.product.price * item.quantity
+    end
+    @cart_total = @item_totals.sum
   end
 
   def index
-    @orders = current_user.orders.all
+    @orders = current_user.orders
+                          .includes(order_details: :product)
+                          .order(created_at: :desc)
   end
 
   def confirm
-    @order = Order.new(order_params)
-    @order.user_id = current_user.id
+    @order = current_user.orders.build(address: order_params[:address])
+    cart_items = current_user.cart&.cart_items&.includes(:product) || []
 
-    @cart_item = current_user.cart.cart_items.includes(:product)
+    if cart_items.empty?
+      redirect_to products_path, alert: "カートが空です。"
+      return
+    end
 
-    @cart_item.each do |item|
+    cart_items.each do |item|
       @order.order_details.build(
-        product_id: item.product.id,
+        product: item.product,
         quantity: item.quantity,
         price: item.product.price
       )
     end
 
-    item_totals = @order.order_details.map do |detail|
-      calculate_item_total(detail.price, detail.quantity)
+    @order.total_price = @order.order_details.sum do |detail|
+      detail.price * detail.quantity
     end
 
-    @order.total_price = calculate_total_sum(item_totals)
-
-    if !@order.valid?
-      redirect_to new_order_path, alert: "注文内容に誤りがあります。"
+    unless @order.valid?
+      redirect_to new_order_path, alert: "配送先を確認してください。"
     end
   end
 
   def create
-    @order = current_user.orders.build(order_params)
+    cart = current_user.cart
+    cart_items = cart&.cart_items&.includes(:product)&.to_a || []
+
+    if cart_items.empty?
+      redirect_to products_path, alert: "カートが空です。"
+      return
+    end
+
+    @order = current_user.orders.build(address: order_params[:address])
+
+    cart_items.each do |item|
+      @order.order_details.build(
+        product: item.product,
+        quantity: item.quantity,
+        price: item.product.price
+      )
+    end
+
+    @order.total_price = @order.order_details.sum do |detail|
+      detail.price * detail.quantity
+    end
 
     if @order.save
+      cart.cart_items.destroy_all
       redirect_to complete_order_path(@order)
     else
-      @product = Product.find(@order.product_id)
-      render :new
+      redirect_to new_order_path, alert: "注文を保存できませんでした。"
     end
   end
 
-def complete
-  @order = current_user.orders.find(params[:id])
-end
+  def complete
+    @order = current_user.orders
+                         .includes(order_details: :product)
+                         .find(params[:id])
+  end
 
   private
 
   def order_params
-    params.require(:order).permit(
-      :product_id,
-      :count,
-      :address,
-      :total_price
-    )
+    params.require(:order).permit(:address)
   end
-
 end

@@ -1,31 +1,48 @@
+
 <h1>注文履歴一覧</h1>
 
 <% if @orders.any? %>
-  <% # 注文を「注文日時（年月日）」ごとにグループ化して日時データを変換 %> 
   <% @orders.group_by { |order| order.created_at.strftime("%Y年%m月%d日") }.each do |ordered_at, grouped_orders| %>
-    <p><strong><%= ordered_at %></strong></p>
-    <table>
-      <thead>
-        <tr>
-          <th>商品名</th>
-          <th>数量</th>
-          <th>合計金額</th>
-          <th>配送先</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% # grouped_orders は日時にまとめられた注文の配列 %>
-        <% grouped_orders.each do |order| %>
+
+    <h3><%= ordered_at %></h3>
+
+    <% grouped_orders.each do |order| %>
+      <h4>注文番号: <%= order.id %></h4>
+
+      <table>
+        <thead>
           <tr>
-            <td><%= order.product.name %></td>
-            <td><%= order.count %></td>
-            <td><%= number_to_currency(order.total_price, unit: "¥", precision: 0) %></td>
-            <td><%= order.address %></td>
+            <th>商品名</th>
+            <th>数量</th>
+            <th>単価</th>
+            <th>小計</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
-    <br>
+        </thead>
+
+        <tbody>
+          <% order.order_details.each do |detail| %>
+            <tr>
+              <td><%= detail.product.name %></td>
+              <td><%= detail.quantity %> 個</td>
+              <td><%= number_to_currency(detail.price, unit: "¥", precision: 0) %></td>
+              <td><%= number_to_currency(detail.price * detail.quantity, unit: "¥", precision: 0) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <p>
+        <strong>合計金額:</strong>
+        <%= number_to_currency(order.total_price, unit: "¥", precision: 0) %>
+      </p>
+
+      <p>
+        <strong>配送先:</strong>
+        <%= order.address %>
+      </p>
+
+      <hr>
+    <% end %>
   <% end %>
 <% else %>
   <p>注文履歴はまだありません。</p>
