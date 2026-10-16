@@ -10,23 +10,23 @@ class OrdersController < ApplicationController
       redirect_to products_path, alert: "カートが空です。"
       return
     end
-    
-    if cart_items.any? { |item| item.product.sold_out? }
+
+    if @cart_items.any? { |item| item.product.sold_out? }
       redirect_to cart_path(current_user.cart),
                   alert: "売り切れの商品がカートに含まれています。"
       return
     end
 
-    if cart_items.any? { |item| item.quantity <= 0 }
+    if @cart_items.any? { |item| item.quantity <= 0 }
       redirect_to cart_path(current_user.cart),
                   alert: "商品の数量が正しくありません。"
       return
     end
 
-
     @item_totals = @cart_items.map do |item|
       item.product.price * item.quantity
     end
+
     @cart_total = @item_totals.sum
   end
 
@@ -45,6 +45,18 @@ class OrdersController < ApplicationController
       return
     end
 
+    if cart_items.any? { |item| item.product.sold_out? }
+      redirect_to cart_path(current_user.cart),
+                  alert: "売り切れの商品がカートに含まれています。"
+      return
+    end
+
+    if cart_items.any? { |item| item.quantity <= 0 }
+      redirect_to cart_path(current_user.cart),
+                  alert: "商品の数量が正しくありません。"
+      return
+    end
+
     cart_items.each do |item|
       @order.order_details.build(
         product: item.product,
@@ -59,6 +71,7 @@ class OrdersController < ApplicationController
 
     unless @order.valid?
       redirect_to new_order_path, alert: "配送先を確認してください。"
+      return
     end
   end
 
@@ -70,15 +83,18 @@ class OrdersController < ApplicationController
       redirect_to products_path, alert: "カートが空です。"
       return
     end
-    if cart_items.any? { |item| item.product.sold_out? }
-  redirect_to cart_path(cart), alert: "売り切れの商品がカートに含まれています。"
-  return
-end
 
-if cart_items.any? { |item| item.quantity <= 0 }
-  redirect_to cart_path(cart), alert: "商品の数量が正しくありません。"
-  return
-end
+    if cart_items.any? { |item| item.product.sold_out? }
+      redirect_to cart_path(cart),
+                  alert: "売り切れの商品がカートに含まれています。"
+      return
+    end
+
+    if cart_items.any? { |item| item.quantity <= 0 }
+      redirect_to cart_path(cart),
+                  alert: "商品の数量が正しくありません。"
+      return
+    end
 
     @order = current_user.orders.build(address: order_params[:address])
 
@@ -98,7 +114,8 @@ end
       cart.cart_items.destroy_all
       redirect_to complete_order_path(@order)
     else
-      redirect_to new_order_path, alert: "注文を保存できませんでした。"
+      redirect_to new_order_path,
+                  alert: "注文を保存できませんでした。"
     end
   end
 
